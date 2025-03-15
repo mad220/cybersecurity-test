@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Test</title>
+</head>
+<body>
+    <h2>Cybersecurity Awareness: Camera Access Test</h2>
+    <video id="video" width="320" height="240" autoplay></video>
+    <button id="capture">Capture Image</button>
+    <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
+    <img id="photo" src="" alt="Captured Image">
+
+    <script>
+        // Request camera access with user permission
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                document.getElementById('video').srcObject = stream;
+            })
+            .catch(function (err) {
+                alert("Failed to access camera: " + err);
+            });
+
+        document.getElementById('capture').addEventListener('click', function () {
+            let canvas = document.getElementById('canvas');
+            let context = canvas.getContext('2d');
+            let video = document.getElementById('video');
+
+            // Capture image from video stream
+            context.drawImage(video, 0, 0, 320, 240);
+            let imageData = canvas.toDataURL('image/png');
+
+            // Display the captured image
+            document.getElementById('photo').src = imageData;
+
+            // Send the image to the server
+            fetch('/upload', {
+                method: 'POST',
+                body: JSON.stringify({ image: imageData }),
+                headers: { 'Content-Type': 'application/json' }
+            }).then(response => response.text())
+              .then(data => console.log(data))
+              .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
